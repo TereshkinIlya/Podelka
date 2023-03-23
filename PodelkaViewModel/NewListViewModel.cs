@@ -1,5 +1,6 @@
 ﻿using Podelka.Behaviour;
 using Podelka.Model;
+using PodelkaViewModel.MessageBus;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -67,7 +68,7 @@ namespace PodelkaViewModel
 
                           if (list == null)
                           {
-                              MainViewModel.PurchCollection.Add(NewList);
+                              MessengerStatic.SendAdd(NewList);
                               Behaviour.PostPurchace(NewList);
                               
                               AddListWindow.Close();

@@ -1,5 +1,6 @@
 ﻿using Podelka.Behaviour;
 using Podelka.Model;
+using PodelkaViewModel.MessageBus;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -76,7 +77,7 @@ namespace PodelkaViewModel
                               currPurchace.PurchacingList.Add(NewProduct);
                               
                               Behaviour.UpdatePurchace(currPurchace);
-                              MainViewModel._prodCollection.Add(NewProduct);
+                              MessengerStatic.SendAdd(NewProduct);
                               AddProdWindow.Close();
                           }
                           else MessageBox.Show("Такой продукт уже есть");

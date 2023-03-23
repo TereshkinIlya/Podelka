@@ -1,5 +1,6 @@
 ﻿using Podelka.Behaviour;
 using Podelka.Model;
+using PodelkaViewModel.MessageBus;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -72,17 +73,9 @@ namespace PodelkaViewModel
                               prod.Quantity = TextQuantity;
 
                               Behaviour.UpdateProduct(prod);
-
-                              Purchace currPurch = Behaviour.GetPurchace(prod.PurchaceId);
-
-                              MainViewModel.AllProductsStorage.Remove(prod.PurchaceId);
-                              
-                              MainViewModel.AllProductsStorage.Add(prod.PurchaceId, 
-                                  new ObservableCollection<Product>(currPurch.PurchacingList));
-
+                              MessengerStatic.SendChange(prod);
                               ChangeProdWindow.Close();
                           }
-                          //else MessageBox.Show("Такой продукт уже есть");
                       }
                       catch (Exception ex)
                       {

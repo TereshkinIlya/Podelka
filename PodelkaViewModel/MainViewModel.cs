@@ -1,5 +1,6 @@
 ﻿using Podelka.Behaviour;
 using Podelka.Model;
+using PodelkaViewModel.MessageBus;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -10,7 +11,6 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-
 namespace PodelkaViewModel
 {
     public class MainViewModel : INotifyPropertyChanged
@@ -20,16 +20,20 @@ namespace PodelkaViewModel
         private Product _selectedProduct;
 
         private Purchace _selectedPurchace;
+        
+        private ObservableCollection<Product>? _prodCollection;
 
-        public static ObservableCollection<Product>? _prodCollection;
-        public static ObservableCollection<Purchace>? PurchCollection { get; set; }
-        public static Dictionary<int, ObservableCollection<Product>> AllProductsStorage { get; set; }
-
+        private ObservableCollection<Purchace>? _purchCollection;
+        private Dictionary<int, ObservableCollection<Product>> AllProductsStorage { get; set; }
         public MainViewModel()
         {
             Behaviour = new MainBehaviour();
-            PurchCollection = new ObservableCollection<Purchace>(Behaviour.GetAllPurchaces());
+            _purchCollection = new ObservableCollection<Purchace>(Behaviour.GetAllPurchaces());
             AllProductsStorage = new Dictionary<int, ObservableCollection<Product>>();
+            MessengerStatic.BusAdd += AddToProdCollection;
+            MessengerStatic.BusAdd += AddToPurchCollection;
+            MessengerStatic.BusChange += ChangeProdInCollections;
+
         }
         
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -37,6 +41,20 @@ namespace PodelkaViewModel
         {
             if (PropertyChanged != null)
                 PropertyChanged(this, new PropertyChangedEventArgs(prop));
+        }
+        private void AddToProdCollection(object data)
+        {
+            ProdCollection.Add(data as Product);
+        }
+        private void AddToPurchCollection(object data)
+        {
+            PurchCollection.Add(data as Purchace);
+        }
+        private void ChangeProdInCollections(object data)
+        {
+            Product currProd = ProdCollection.FirstOrDefault(p => p.Id == (data as Product).Id);
+            ProdCollection.Remove(currProd); 
+            ProdCollection.Add(data as Product);
         }
         public Product SelectedProduct
         {
@@ -56,7 +74,6 @@ namespace PodelkaViewModel
                 OnPropertyChanged("SelectedPurchace");
             }
         }
-
         public ObservableCollection<Product> ProdCollection
         {
             get { return _prodCollection; }
@@ -64,6 +81,15 @@ namespace PodelkaViewModel
             {
                 _prodCollection = value;
                 OnPropertyChanged("ProdCollection");
+            }
+        }
+        public ObservableCollection<Purchace> PurchCollection
+        {
+            get { return _purchCollection; }
+            set
+            {
+                _purchCollection = value;
+                OnPropertyChanged("PurchCollection");
             }
         }
 
@@ -104,12 +130,9 @@ namespace PodelkaViewModel
                       {
                           if (SelectedPurchace != null)
                           {
-                              int tempId = SelectedPurchace.Id;
-
+                              AllProductsStorage[SelectedPurchace.Id].Clear();
                               Behaviour.DeletePurchace(SelectedPurchace);
                               PurchCollection.Remove(SelectedPurchace);
-
-                              AllProductsStorage[tempId].Clear();
 
                               SelectedPurchace = null;
                           }
